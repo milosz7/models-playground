@@ -42,18 +42,20 @@ class OwnNearestNeighbors(BaseClassifier):
                                            Y[(Y.shape[0] // 2 + 1):],
                                            depth + 1)
             return node
+        
+    def __vote(self, labels):    
+        return np.argmax(np.bincount(labels))
   
-    def __bruteforce(self, point, point_idx):
-        best = None
-        best_label = None
-        best_distance = np.inf
+    def __bruteforce(self, point, point_idx, n_neighbors):
+        best_distances = np.full(n_neighbors, np.inf)
+        best_labels = np.zeros(n_neighbors, dtype="uint8")
         for i in range(self.X.shape[0]):
             distance = self.__distance(self.X[i], point)
-            if distance < best_distance:
-                best_distance = distance
-                best = self.X[i]
-                self.labels[point_idx] = self.Y[i]
-        return best
+            max_distance_idx = np.argmax(best_distances)
+            if distance < best_distances[np.argmax(best_distances)]:
+              best_distances[np.argmax(best_distances)] = distance
+              best_labels[max_distance_idx] = self.Y[i]
+        self.labels[point_idx] = self.__vote(best_labels)
 
     def __traverse_kdtree(self, current, point: np.ndarray, depth=0):
         if current is None:
@@ -63,7 +65,6 @@ class OwnNearestNeighbors(BaseClassifier):
         axis = depth % n_features
         next_node = None
         opposite_node = None
-        best_label = None
 
         if (point[axis] < current["location"][axis]):
             next_node = current["left"]
@@ -84,16 +85,16 @@ class OwnNearestNeighbors(BaseClassifier):
 
     def predict(self, X: np.ndarray, Y: np.ndarray, n_neigbors: int = 3):
         self.labels = np.zeros(X.shape[0], dtype="uint8")
-        print(X.shape[0])
         tree = self.__kd_tree(
             self.X,
-            self.Y,
+            self.Y
         )
         for i in range(X.shape[0]):
             best = self.__traverse_kdtree(tree, X[i], i)
-            self.labels[i] = self.Y[np.where(np.all(self.X[:,] == best, axis=1))[0][0]]
+            self.labels[i] = self.Y[np.where(np.all(self.X == best, axis=1))[0][0]]
         print("real     :", Y)
         print("kd labels:", self.labels)
         for i in range(X.shape[0]):
-          best = self.__bruteforce(X[i], i)
+            self.__bruteforce(X[i], i, n_neigbors)
+        print("real     :", Y)
         print("bf labels:", self.labels)
