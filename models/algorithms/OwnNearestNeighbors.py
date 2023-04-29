@@ -1,5 +1,7 @@
 import numpy as np
 from algorithms.BaseClassifier import BaseClassifier
+from dataclasses import dataclass
+
 
 class OwnNearestNeighbors(BaseClassifier):
 
@@ -32,8 +34,8 @@ class OwnNearestNeighbors(BaseClassifier):
             X = X[sorted_ids]
             Y = Y[sorted_ids]
             split_node = X[X.shape[0] // 2, :]
-            split_idx = Y[Y.shape[0] // 2]
-            node = {"axis": axis, "location": split_node, "label_idx": split_idx}
+            split_label = Y[Y.shape[0] // 2]
+            node = {"axis": axis, "location": split_node, "label": split_label}
             node["left"] = self.__kd_tree(X[:(X.shape[0] // 2), :],
                                           Y[:(Y.shape[0] // 2)], depth + 1)
             node["right"] = self.__kd_tree(X[(X.shape[0] // 2 + 1):, :],
@@ -84,8 +86,14 @@ class OwnNearestNeighbors(BaseClassifier):
         self.labels = np.zeros(X.shape[0], dtype="uint8")
         print(X.shape[0])
         tree = self.__kd_tree(
-                self.X,
-                self.Y,
-            )
-
-
+            self.X,
+            self.Y,
+        )
+        for i in range(X.shape[0]):
+            best = self.__traverse_kdtree(tree, X[i], i)
+            self.labels[i] = self.Y[np.where(np.all(self.X[:,] == best, axis=1))[0][0]]
+        print("real     :", Y)
+        print("kd labels:", self.labels)
+        for i in range(X.shape[0]):
+          best = self.__bruteforce(X[i], i)
+        print("bf labels:", self.labels)
