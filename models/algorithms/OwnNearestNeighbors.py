@@ -77,7 +77,7 @@ class OwnNearestNeighbors(BaseClassifier):
 
         n_features = point.shape[0]
         axis = depth % n_features
-        next_node = NoneALGORITHM = Literal["kdtree", "bruteforce"]
+        next_node = None
         opposite_node = None
 
         if (point[axis] < current["location"][axis]):
