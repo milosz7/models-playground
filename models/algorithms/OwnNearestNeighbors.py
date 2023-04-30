@@ -2,8 +2,6 @@ import numpy as np
 from algorithms.BaseClassifier import BaseClassifier
 from typing import Literal
 
-ALGORITHM = Literal["kdtree", "bruteforce"]
-
 
 class OwnNearestNeighbors(BaseClassifier):
 
@@ -79,7 +77,7 @@ class OwnNearestNeighbors(BaseClassifier):
 
         n_features = point.shape[0]
         axis = depth % n_features
-        next_node = None
+        next_node = NoneALGORITHM = Literal["kdtree", "bruteforce"]
         opposite_node = None
 
         if (point[axis] < current["location"][axis]):
